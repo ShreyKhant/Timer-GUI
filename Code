@@ -1,0 +1,101 @@
+# Timer GUI. Edit and make your own personalised timer
+import tkinter as tk
+import time
+
+# Initial setup of the main window
+root = tk.Tk()
+root.config(pady=50, padx=50)
+
+run_timer = False
+start_time = None
+save_time = 0.0
+laps = []
+lap_counter = 1  # Initialize lap counter
+
+# Create and pack the frame for displaying time
+time_frame = tk.Frame(root)
+time_frame.config(pady=30, padx=25)
+time_frame.pack()
+
+# Create and configure the label to display the timer
+time_label = tk.Label(time_frame, text="00:00:00", font=("Times", 25), width=15)  # Set width for better display
+time_label.config(pady=30, padx=25)
+time_label.pack()
+
+# Function to start the timer
+def start_timer():
+    global run_timer, start_time, save_time
+    if not run_timer:
+        run_timer = True
+        if start_time is None:
+            start_time = time.time()
+        else:
+            start_time = time.time() - save_time
+        update_time()
+
+# Function to update the timer every second
+def update_time():
+    global run_timer, start_time, save_time
+    if run_timer:
+        current_time = time.time()
+        elapsed_time = current_time - start_time
+        formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        time_label.config(text=formatted_time)
+        root.after(1000, update_time)
+
+# Function to stop the timer and save elapsed time
+def stop_timer():
+    global run_timer, start_time, save_time
+    if run_timer:
+        run_timer = False
+        save_time = time.time() - start_time
+
+# Function to record lap times and update the lap listbox
+def lap():
+    global run_timer, save_time, start_time, lap_counter
+    if run_timer:
+        current_time = time.time()
+        elapsed_time = current_time - start_time
+        lap_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        lap_entry = f"Lap {lap_counter}: {lap_time}"
+        laps.append(lap_entry)
+        lap_listbox.insert(tk.END, lap_entry)
+        lap_counter += 1  # Increment lap counter
+
+# Define buttons and their functions
+buttons = [
+    ("Start", "Stop", "Lap")
+]
+
+# Create and pack the frame for buttons
+button_frame = tk.Frame(root)
+button_frame.config(pady=30)
+button_frame.pack(side="bottom")
+
+# Create buttons and assign commands
+for r, row in enumerate(buttons):
+    row_frame = tk.Frame(button_frame)
+    row_frame.pack()
+    for label in row:
+        if label == "Start":
+            button = tk.Button(row_frame, text=label, font=("Times", 16), bg="grey", fg="white", command=start_timer)
+        elif label == "Stop":
+            button = tk.Button(row_frame, text=label, font=("Times", 16), bg="grey", fg="white", command=stop_timer)
+        elif label == "Lap":
+            button = tk.Button(row_frame, text="Lap", font=("Times", 16), bg="grey", fg="white", command=lap)  # Static text for lap button
+        button.pack(side="left", padx=10, pady=10)
+
+# Create and pack the frame for lap listbox
+lap_frame = tk.Frame(root)
+lap_frame.config(pady=20, padx=15)
+lap_frame.pack()
+
+# Create and configure the lap listbox
+lap_listbox_frame = tk.Frame(lap_frame)
+lap_listbox_frame.pack(pady=15, padx=10)
+
+lap_listbox = tk.Listbox(lap_listbox_frame, font=('Times', 15), width=30, height=10)
+lap_listbox.pack(side="bottom", fill=tk.BOTH, expand=True)
+
+# Start the Tkinter event loop
+root.mainloop()
